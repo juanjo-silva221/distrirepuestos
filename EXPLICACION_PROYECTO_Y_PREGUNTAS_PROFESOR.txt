@@ -1,0 +1,1381 @@
+EXPLICACION DETALLADA DEL PROYECTO DISTRI REPUESTOS / MOTOREPUESTOS
+====================================================================
+
+1. RESUMEN GENERAL
+------------------
+
+Este proyecto es una aplicacion web de comercio electronico para una tienda de
+repuestos de motocicletas llamada Distri Repuestos / MotoRepuestos.
+
+La aplicacion permite:
+
+- Ver un catalogo de productos.
+- Buscar productos por nombre o marca.
+- Filtrar productos por categoria.
+- Ver detalles de cada producto.
+- Agregar productos al carrito de compras.
+- Cambiar cantidades o eliminar productos del carrito.
+- Registrarse e iniciar sesion.
+- Realizar pedidos desde el checkout.
+- Consultar pedidos del usuario.
+- Enviar mensajes de contacto.
+
+El proyecto esta dividido en dos partes principales:
+
+- Frontend: hecho con React y Vite.
+- Backend: hecho con Spring Boot, Java, JPA/Hibernate y MySQL.
+
+La idea principal es que el frontend se encarga de la parte visual y de la
+interaccion con el usuario, mientras que el backend se encarga de recibir las
+peticiones, aplicar la logica de negocio y guardar la informacion en la base de
+datos.
+
+
+2. ESTRUCTURA DEL PROYECTO
+--------------------------
+
+Carpeta principal:
+
+distrirepuestos-springboot-integrado/distrirepuestos-main
+
+Dentro estan las dos aplicaciones:
+
+1. motorepuestos-app
+   Es el frontend del proyecto. Esta construido con React y Vite.
+
+2. motorepuestos-backend
+   Es el backend del proyecto. Esta construido con Spring Boot.
+
+Tambien existe documentacion adicional como:
+
+- README-INTEGRACION-SPRING-BOOT.md
+- RESUMEN_CAMBIOS_BACKEND.txt
+- Documentacion_Migracion_React_SpringBoot_MySQL.pdf
+
+
+3. TECNOLOGIAS USADAS
+---------------------
+
+Frontend:
+
+- React: biblioteca para construir interfaces de usuario.
+- Vite: herramienta para ejecutar y compilar el frontend rapidamente.
+- JavaScript: lenguaje usado en los componentes.
+- CSS: estilos visuales de la pagina.
+- LocalStorage: almacenamiento temporal en el navegador para carrito y usuario.
+- Fetch API: para comunicarse con el backend.
+
+Backend:
+
+- Java: lenguaje principal del backend.
+- Spring Boot 2.7.18: framework para crear la API REST.
+- Spring Web: permite crear controladores REST.
+- Spring Data JPA: facilita el acceso a la base de datos.
+- Hibernate: implementacion de JPA que crea y administra tablas.
+- Bean Validation: validaciones como @NotBlank, @Email, @Min.
+- MySQL Connector/J: driver para conectar Java con MySQL.
+- Spring Security Crypto: se usa para cifrar contrasenas con BCrypt.
+- Maven: gestor de dependencias y herramienta para ejecutar el backend.
+
+Base de datos:
+
+- MySQL.
+- Base de datos configurada: distrirepuestos_db.
+
+
+4. ARQUITECTURA GENERAL
+-----------------------
+
+El proyecto sigue una arquitectura cliente-servidor.
+
+Flujo general:
+
+Usuario -> Frontend React -> API REST Spring Boot -> Servicios -> Repositorios -> MySQL
+
+Explicacion:
+
+- El usuario interactua con la pagina web.
+- React captura acciones como buscar, agregar al carrito, iniciar sesion o comprar.
+- React envia peticiones HTTP al backend usando la API.
+- Spring Boot recibe esas peticiones en los controladores.
+- Los controladores llaman a los servicios.
+- Los servicios contienen la logica de negocio.
+- Los repositorios se comunican con la base de datos.
+- MySQL guarda productos, clientes, pedidos, detalles de pedido y mensajes.
+
+Esta separacion es importante porque hace que el codigo sea mas ordenado,
+mantenible y facil de explicar.
+
+
+5. FRONTEND: MOTOREPUESTOS-APP
+------------------------------
+
+El frontend esta en:
+
+motorepuestos-app
+
+Archivo principal:
+
+src/App.jsx
+
+En App.jsx se controla la mayor parte del estado global de la interfaz:
+
+- searchQuery: texto de busqueda.
+- activeCategory: categoria seleccionada.
+- selectedProduct: producto abierto en detalle.
+- isCheckoutOpen: indica si el checkout esta abierto.
+- isAuthOpen: indica si el modal de login/registro esta abierto.
+- isAccountOpen: indica si la cuenta del usuario esta abierta.
+- currentUser: usuario que inicio sesion.
+- orders: pedidos del usuario.
+- products: productos cargados desde la API.
+
+Cuando la aplicacion inicia, intenta cargar los productos desde:
+
+GET http://localhost:8080/api/products
+
+Si no puede cargarlos desde el backend, usa productos locales de respaldo
+definidos en src/data.js.
+
+
+6. COMPONENTES PRINCIPALES DEL FRONTEND
+---------------------------------------
+
+Header:
+
+Muestra la parte superior de la pagina. Desde ahi se puede abrir la cuenta,
+el login o el contacto.
+
+Hero:
+
+Seccion visual inicial de la pagina.
+
+ProductFilter:
+
+Permite buscar productos y filtrar por categoria.
+
+ProductGrid:
+
+Muestra la lista de productos filtrados.
+
+ProductCard:
+
+Representa una tarjeta individual de producto.
+
+ProductDetails:
+
+Muestra informacion mas detallada de un producto seleccionado.
+
+CartDrawer:
+
+Muestra el carrito lateral, con productos agregados, cantidades y total.
+
+Checkout:
+
+Formulario final para realizar el pedido. Pide nombre, correo, telefono,
+direccion, ciudad y metodo de pago.
+
+AuthModal:
+
+Modal para iniciar sesion o registrarse.
+
+MyAccountModal:
+
+Muestra informacion del usuario y sus pedidos.
+
+ContactForm:
+
+Formulario para enviar mensajes de contacto.
+
+FloatingButtons:
+
+Botones flotantes de acceso rapido.
+
+Footer:
+
+Parte inferior de la pagina.
+
+
+7. MANEJO DEL CARRITO
+---------------------
+
+El carrito se maneja con React Context.
+
+Archivos:
+
+- src/context/CartContext.jsx
+- src/context/CartContextCore.js
+- src/context/useCart.js
+
+El CartProvider guarda:
+
+- cart: productos del carrito.
+- isCartOpen: si el carrito esta abierto.
+- addToCart: agrega productos.
+- removeFromCart: elimina productos.
+- updateQuantity: cambia cantidad.
+- clearCart: limpia el carrito.
+- cartTotal: calcula el total.
+- cartItemsCount: calcula cantidad total de items.
+
+El carrito se guarda en localStorage con la clave:
+
+motorepuestos-cart
+
+Esto permite que si el usuario recarga la pagina, el carrito no se pierda
+inmediatamente.
+
+
+8. COMUNICACION DEL FRONTEND CON EL BACKEND
+-------------------------------------------
+
+Archivo:
+
+src/api.js
+
+Este archivo centraliza las llamadas HTTP al backend.
+
+La URL base es:
+
+http://localhost:8080/api
+
+Tambien puede cambiarse con una variable de entorno:
+
+VITE_API_URL
+
+Funciones principales:
+
+- getProducts(): obtiene productos.
+- login(credentials): inicia sesion.
+- register(data): registra usuario.
+- createOrder(data): crea pedido.
+- getOrders(email): consulta pedidos por correo.
+- createContactMessage(data): guarda mensaje de contacto.
+
+Esto es una buena practica porque evita repetir fetch en todos los componentes.
+
+
+9. BACKEND: MOTOREPUESTOS-BACKEND
+---------------------------------
+
+El backend esta en:
+
+motorepuestos-backend
+
+Archivo principal:
+
+src/main/java/com/distrirepuestos/MotorepuestosBackendApplication.java
+
+Ese archivo arranca la aplicacion Spring Boot.
+
+El backend expone una API REST en:
+
+http://localhost:8080/api
+
+La configuracion principal esta en:
+
+src/main/resources/application.properties
+
+Configuracion importante:
+
+- Puerto: 8080.
+- Base de datos: distrirepuestos_db.
+- Usuario MySQL: root.
+- Contrasena: vacia por defecto.
+- Hibernate ddl-auto: update.
+- Dialecto: MySQL8Dialect.
+- CORS permitido para el frontend en localhost:5173.
+
+
+10. ARQUITECTURA DEL BACKEND POR CAPAS
+--------------------------------------
+
+El backend esta organizado asi:
+
+controller -> service -> repository -> database
+
+Controller:
+
+Recibe las peticiones HTTP. No deberia tener mucha logica de negocio.
+
+Service:
+
+Contiene la logica de negocio. Por ejemplo: calcular total de pedido, validar
+login, cifrar contrasena, generar codigo de pedido.
+
+Repository:
+
+Se comunica con la base de datos usando Spring Data JPA.
+
+Model:
+
+Representa las entidades que se convierten en tablas de MySQL.
+
+DTO:
+
+Objetos usados para recibir o devolver datos sin exponer directamente toda la
+entidad.
+
+Exception:
+
+Maneja errores de forma ordenada.
+
+
+11. MODELOS O ENTIDADES DEL BACKEND
+-----------------------------------
+
+Product:
+
+Tabla: productos
+
+Campos principales:
+
+- id
+- brand
+- title
+- specs
+- price
+- stock
+- category
+- image
+
+Representa un repuesto del catalogo.
+
+Customer:
+
+Tabla: clientes
+
+Campos principales:
+
+- id
+- name
+- email
+- password
+
+Representa un usuario registrado. El correo es unico y la contrasena se guarda
+cifrada.
+
+SaleOrder:
+
+Tabla: pedidos
+
+Campos principales:
+
+- id
+- code
+- date
+- total
+- status
+- nombre
+- email
+- telefono
+- direccion
+- ciudad
+- metodoPago
+- items
+
+Representa un pedido realizado por un cliente.
+
+SaleOrderItem:
+
+Tabla: detalles_pedido
+
+Campos principales:
+
+- id
+- productId
+- name
+- quantity
+- price
+- order
+
+Representa cada producto dentro de un pedido.
+
+ContactMessage:
+
+Tabla: mensajes_contacto
+
+Campos principales:
+
+- id
+- nombre
+- telefono
+- correo
+- observaciones
+- fecha
+
+Representa un mensaje enviado desde el formulario de contacto.
+
+
+12. RELACION ENTRE PEDIDOS Y DETALLES
+-------------------------------------
+
+La relacion principal es:
+
+Un pedido puede tener muchos detalles de pedido.
+
+En Java:
+
+SaleOrder tiene una lista de SaleOrderItem.
+
+Anotacion usada:
+
+@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+
+SaleOrderItem tiene una referencia al pedido:
+
+@ManyToOne
+@JoinColumn(name = "pedido_id")
+
+Esto significa que cada item pertenece a un pedido especifico.
+
+
+13. CONTROLADORES DEL BACKEND
+-----------------------------
+
+ProductController:
+
+Ruta base:
+
+/api/products
+
+Endpoints:
+
+- GET /api/products
+  Lista productos.
+
+- GET /api/products/{id}
+  Busca producto por id.
+
+- POST /api/products
+  Crea producto.
+
+- PUT /api/products/{id}
+  Actualiza producto.
+
+- DELETE /api/products/{id}
+  Elimina producto.
+
+AuthController:
+
+Ruta base:
+
+/api/auth
+
+Endpoints:
+
+- POST /api/auth/register
+  Registra usuario.
+
+- POST /api/auth/login
+  Inicia sesion.
+
+OrderController:
+
+Ruta base:
+
+/api/orders
+
+Endpoints:
+
+- GET /api/orders?email=correo
+  Consulta pedidos por correo.
+
+- POST /api/orders
+  Crea pedido.
+
+ContactController:
+
+Ruta base:
+
+/api/contact
+
+Endpoint:
+
+- POST /api/contact
+  Guarda mensaje de contacto.
+
+
+14. SERVICIOS DEL BACKEND
+-------------------------
+
+ProductService:
+
+Responsabilidades:
+
+- Listar productos.
+- Filtrar por categoria.
+- Buscar producto por id.
+- Crear producto.
+- Actualizar producto.
+- Eliminar producto.
+
+AuthService:
+
+Responsabilidades:
+
+- Registrar usuarios.
+- Verificar si el correo ya existe.
+- Cifrar contrasenas con BCrypt.
+- Validar login.
+- Migrar automaticamente contrasenas antiguas sin cifrar a BCrypt.
+
+OrderService:
+
+Responsabilidades:
+
+- Crear pedidos.
+- Generar codigo de pedido con formato ORD-anio-numero.
+- Guardar fecha del pedido.
+- Copiar datos del cliente.
+- Recorrer los items del carrito.
+- Calcular el total.
+- Guardar pedido y detalles.
+- Consultar pedidos por correo.
+
+ContactService:
+
+Responsabilidades:
+
+- Guardar mensajes de contacto.
+- Asignar fecha automaticamente.
+
+
+15. REPOSITORIOS
+----------------
+
+Los repositorios usan Spring Data JPA. Esto permite crear consultas sin escribir
+SQL manual para la mayoria de casos.
+
+Repositorios:
+
+- ProductRepository
+- CustomerRepository
+- SaleOrderRepository
+- ContactMessageRepository
+
+Ejemplos de metodos usados:
+
+- findAll()
+- findById()
+- save()
+- delete()
+- findByEmailIgnoreCase()
+- existsByEmailIgnoreCase()
+- findByCategoryIgnoreCase()
+- findByEmailIgnoreCaseOrderByDateDesc()
+
+
+16. DTOs
+--------
+
+Los DTOs sirven para transportar datos entre frontend y backend.
+
+AuthRequest:
+
+Se usa para login y registro. Tiene:
+
+- name
+- email
+- password
+
+CustomerResponse:
+
+Devuelve datos seguros del cliente, evitando devolver la contrasena.
+
+OrderRequest:
+
+Recibe los datos del checkout:
+
+- nombre
+- email
+- telefono
+- direccion
+- ciudad
+- metodoPago
+- items
+
+OrderItemRequest:
+
+Recibe cada producto del pedido:
+
+- productId
+- name
+- quantity
+- price
+
+OrderResponse:
+
+Devuelve el pedido creado o consultado:
+
+- id/codigo
+- date
+- total
+- status
+- items
+- trackingSteps
+
+
+17. VALIDACIONES
+----------------
+
+El backend usa anotaciones de validacion:
+
+- @NotBlank: obliga a que el campo no este vacio.
+- @Email: obliga a que el campo tenga formato de correo.
+- @NotNull: obliga a que el campo exista.
+- @Min(0): evita valores negativos.
+- @NotEmpty: obliga a que una lista tenga elementos.
+- @Valid: activa validaciones en objetos internos.
+
+Ejemplos:
+
+- Un producto no puede tener precio negativo.
+- Un cliente debe tener email valido.
+- Un pedido debe tener al menos un item.
+- Un mensaje de contacto debe tener nombre, telefono, correo y observaciones.
+
+
+18. MANEJO DE ERRORES
+---------------------
+
+El paquete exception contiene:
+
+- ApiError
+- GlobalExceptionHandler
+- ResourceNotFoundException
+
+GlobalExceptionHandler usa @ControllerAdvice para capturar errores de forma
+global.
+
+Ejemplos:
+
+- Si no existe un producto, devuelve 404.
+- Si los datos son invalidos, devuelve 400.
+- Si el correo ya existe, devuelve 409.
+- Si las credenciales son incorrectas, devuelve 401.
+- Si ocurre un error inesperado, devuelve 500.
+
+Esto hace que la API responda de forma mas ordenada y profesional.
+
+
+19. SEGURIDAD DE CONTRASENAS
+----------------------------
+
+El proyecto usa BCrypt para cifrar contrasenas.
+
+Archivo:
+
+PasswordConfig.java
+
+Servicio:
+
+AuthService.java
+
+Cuando un usuario se registra, la contrasena se guarda cifrada, no en texto
+plano.
+
+El login compara la contrasena ingresada con la contrasena cifrada usando
+PasswordEncoder.
+
+Tambien existe una compatibilidad para usuarios antiguos:
+
+Si una contrasena antigua estaba guardada sin cifrar y el usuario logra iniciar
+sesion, el sistema la actualiza automaticamente a BCrypt.
+
+Importante:
+
+El proyecto usa cifrado de contrasenas, pero no implementa JWT ni sesiones
+seguras completas. Para produccion seria recomendable agregar Spring Security
+con tokens JWT o sesiones protegidas.
+
+
+20. CORS
+--------
+
+CORS permite que el frontend y el backend se comuniquen aunque esten en puertos
+distintos.
+
+Frontend:
+
+http://localhost:5173
+
+Backend:
+
+http://localhost:8080
+
+Archivo:
+
+CorsConfig.java
+
+Permite rutas:
+
+/api/**
+
+Metodos permitidos:
+
+- GET
+- POST
+- PUT
+- DELETE
+- OPTIONS
+
+
+21. BASE DE DATOS
+-----------------
+
+La base de datos configurada es:
+
+distrirepuestos_db
+
+La conexion esta en:
+
+application.properties
+
+Configuracion:
+
+spring.datasource.url=jdbc:mysql://localhost:3306/distrirepuestos_db
+spring.datasource.username=root
+spring.datasource.password=
+
+Hibernate usa:
+
+spring.jpa.hibernate.ddl-auto=update
+
+Eso significa que Spring Boot puede crear o actualizar las tablas segun las
+entidades Java.
+
+Tablas esperadas:
+
+- productos
+- clientes
+- pedidos
+- detalles_pedido
+- mensajes_contacto
+
+
+22. CARGA INICIAL DE PRODUCTOS
+------------------------------
+
+El archivo DataSeeder.java carga productos iniciales cuando la tabla productos
+esta vacia.
+
+Usa CommandLineRunner, que se ejecuta al iniciar Spring Boot.
+
+Si productRepository.count() es mayor que cero, no vuelve a cargar los datos.
+Esto evita duplicar productos cada vez que se inicia el servidor.
+
+Las categorias principales son:
+
+- Motor
+- Frenos
+- Transmision
+- Suspension
+- Electrico
+- Iluminacion
+
+
+23. FLUJO DE COMPRA COMPLETO
+----------------------------
+
+1. El usuario entra a la pagina.
+
+2. React carga los productos desde:
+
+   GET /api/products
+
+3. El usuario busca o filtra productos.
+
+4. El usuario abre un producto y lo agrega al carrito.
+
+5. El carrito se guarda en localStorage.
+
+6. El usuario abre el checkout.
+
+7. Llena los datos:
+
+   - nombre
+   - email
+   - telefono
+   - direccion
+   - ciudad
+   - metodo de pago
+
+8. React envia el pedido al backend:
+
+   POST /api/orders
+
+9. OrderService crea el pedido:
+
+   - genera codigo
+   - pone fecha
+   - guarda datos del cliente
+   - guarda items
+   - calcula total
+
+10. JPA guarda el pedido en MySQL.
+
+11. El backend devuelve un OrderResponse.
+
+12. React muestra confirmacion y limpia el carrito.
+
+
+24. FLUJO DE REGISTRO E INICIO DE SESION
+----------------------------------------
+
+Registro:
+
+1. El usuario abre el modal de crear cuenta.
+2. Ingresa nombre, correo y contrasena.
+3. React envia:
+
+   POST /api/auth/register
+
+4. AuthService valida que el nombre exista y que el correo no este repetido.
+5. La contrasena se cifra con BCrypt.
+6. Se guarda el cliente en la tabla clientes.
+7. El backend devuelve CustomerResponse sin contrasena.
+
+Login:
+
+1. El usuario ingresa correo y contrasena.
+2. React envia:
+
+   POST /api/auth/login
+
+3. AuthService busca el cliente por email.
+4. Compara la contrasena ingresada con la guardada.
+5. Si coincide, devuelve CustomerResponse.
+6. React guarda el usuario en localStorage con la clave:
+
+   motorepuestos-user
+
+
+25. FLUJO DE CONTACTO
+---------------------
+
+1. El usuario abre el formulario de contacto.
+2. Ingresa nombre, telefono, correo y observaciones.
+3. React envia:
+
+   POST /api/contact
+
+4. ContactService asigna la fecha actual.
+5. Se guarda el mensaje en la tabla mensajes_contacto.
+
+
+26. COMO EJECUTAR EL PROYECTO
+-----------------------------
+
+Backend:
+
+1. Tener MySQL activo.
+2. Verificar que exista la base de datos distrirepuestos_db o permitir que se
+   cree con createDatabaseIfNotExist=true.
+3. Entrar a:
+
+   motorepuestos-backend
+
+4. Ejecutar:
+
+   mvn spring-boot:run
+
+5. El backend queda en:
+
+   http://localhost:8080
+
+Frontend:
+
+1. Entrar a:
+
+   motorepuestos-app
+
+2. Instalar dependencias si hace falta:
+
+   npm install
+
+3. Ejecutar:
+
+   npm run dev
+
+4. El frontend queda en:
+
+   http://localhost:5173
+
+
+27. POSIBLES PREGUNTAS DEL PROFESOR Y RESPUESTAS
+------------------------------------------------
+
+Pregunta 1:
+Que problema resuelve este proyecto?
+
+Respuesta:
+Resuelve la necesidad de una tienda de repuestos de motocicletas de mostrar su
+catalogo en linea, permitir busquedas, manejar carrito de compras, registrar
+usuarios, recibir pedidos y guardar mensajes de contacto.
+
+
+Pregunta 2:
+Que tipo de aplicacion es?
+
+Respuesta:
+Es una aplicacion web cliente-servidor. El cliente es el frontend en React y el
+servidor es una API REST hecha con Spring Boot conectada a MySQL.
+
+
+Pregunta 3:
+Por que separaron frontend y backend?
+
+Respuesta:
+Porque cada parte tiene una responsabilidad diferente. React se encarga de la
+interfaz y experiencia del usuario, mientras Spring Boot se encarga de la logica
+de negocio, validaciones, persistencia y comunicacion con la base de datos.
+
+
+Pregunta 4:
+Que es una API REST?
+
+Respuesta:
+Es una forma de exponer servicios por HTTP usando rutas y metodos como GET,
+POST, PUT y DELETE. En este proyecto la API permite consultar productos,
+registrar usuarios, iniciar sesion, crear pedidos y guardar mensajes.
+
+
+Pregunta 5:
+Que endpoints tiene el proyecto?
+
+Respuesta:
+Los principales son:
+
+- GET /api/products
+- GET /api/products/{id}
+- POST /api/products
+- PUT /api/products/{id}
+- DELETE /api/products/{id}
+- POST /api/auth/register
+- POST /api/auth/login
+- POST /api/orders
+- GET /api/orders?email=correo
+- POST /api/contact
+
+
+Pregunta 6:
+Que base de datos usa?
+
+Respuesta:
+Usa MySQL. La base de datos configurada se llama distrirepuestos_db.
+
+
+Pregunta 7:
+Como se crean las tablas?
+
+Respuesta:
+Las tablas se crean o actualizan automaticamente con Hibernate gracias a la
+configuracion spring.jpa.hibernate.ddl-auto=update. Las entidades Java tienen
+anotaciones JPA como @Entity y @Table.
+
+
+Pregunta 8:
+Que es JPA?
+
+Respuesta:
+JPA es una especificacion de Java para mapear objetos a tablas de base de datos.
+Permite trabajar con clases Java como Product, Customer o SaleOrder y guardarlas
+en MySQL sin escribir todo el SQL manualmente.
+
+
+Pregunta 9:
+Que es Hibernate?
+
+Respuesta:
+Hibernate es la implementacion de JPA que usa Spring Boot para convertir las
+entidades Java en registros de base de datos.
+
+
+Pregunta 10:
+Que es un repositorio en Spring Data JPA?
+
+Respuesta:
+Es una interfaz que permite acceder a la base de datos con metodos ya listos
+como findAll, findById, save y delete. Tambien permite crear consultas por el
+nombre del metodo.
+
+
+Pregunta 11:
+Por que se usa una capa Service?
+
+Respuesta:
+Para separar la logica de negocio de los controladores. Asi los controladores
+solo reciben peticiones y los servicios hacen operaciones como validar login,
+calcular totales o generar codigos de pedido.
+
+
+Pregunta 12:
+Que hace ProductService?
+
+Respuesta:
+Maneja la logica de productos: listar, filtrar por categoria, buscar por id,
+crear, actualizar y eliminar productos.
+
+
+Pregunta 13:
+Que hace AuthService?
+
+Respuesta:
+Maneja registro e inicio de sesion. Verifica correos repetidos, cifra
+contrasenas con BCrypt y valida credenciales.
+
+
+Pregunta 14:
+Que hace OrderService?
+
+Respuesta:
+Crea pedidos, genera el codigo del pedido, asigna fecha, guarda datos de envio,
+guarda los items y calcula el total.
+
+
+Pregunta 15:
+Que hace ContactService?
+
+Respuesta:
+Guarda mensajes enviados desde el formulario de contacto y les asigna la fecha
+actual.
+
+
+Pregunta 16:
+Como funciona el carrito?
+
+Respuesta:
+El carrito funciona en el frontend con React Context. Guarda productos,
+cantidades y total. Tambien usa localStorage para conservar el carrito si se
+recarga la pagina.
+
+
+Pregunta 17:
+El carrito se guarda en la base de datos?
+
+Respuesta:
+No directamente. El carrito se maneja temporalmente en el navegador. Solo
+cuando el usuario confirma el checkout, se crea un pedido y ese pedido si se
+guarda en MySQL.
+
+
+Pregunta 18:
+Como se calcula el total de un pedido?
+
+Respuesta:
+En OrderService se recorren los items del pedido y se suma price * quantity de
+cada producto.
+
+
+Pregunta 19:
+Como se genera el codigo del pedido?
+
+Respuesta:
+OrderService genera un codigo con el formato ORD-anio-numero, por ejemplo
+ORD-2026-1234. El numero se genera aleatoriamente.
+
+
+Pregunta 20:
+Como se protegen las contrasenas?
+
+Respuesta:
+Las contrasenas nuevas se cifran usando BCrypt mediante PasswordEncoder. Esto
+evita guardar contrasenas en texto plano.
+
+
+Pregunta 21:
+El sistema tiene autenticacion completa con JWT?
+
+Respuesta:
+No. El sistema tiene registro, login y cifrado de contrasenas, pero no usa JWT.
+Para una version de produccion seria recomendable agregar Spring Security con
+tokens JWT o sesiones seguras.
+
+
+Pregunta 22:
+Por que no se devuelve la contrasena al frontend?
+
+Respuesta:
+Por seguridad. El backend devuelve CustomerResponse, que contiene datos del
+cliente pero no expone el password.
+
+
+Pregunta 23:
+Que es CORS y por que se configuro?
+
+Respuesta:
+CORS permite que el frontend en http://localhost:5173 pueda hacer peticiones al
+backend en http://localhost:8080. Sin esa configuracion, el navegador podria
+bloquear las solicitudes por seguridad.
+
+
+Pregunta 24:
+Que validaciones tiene el backend?
+
+Respuesta:
+Usa validaciones como @NotBlank para campos obligatorios, @Email para correos,
+@Min(0) para evitar precios o stock negativos y @NotEmpty para asegurar que un
+pedido tenga items.
+
+
+Pregunta 25:
+Que pasa si se busca un producto que no existe?
+
+Respuesta:
+ProductService lanza ResourceNotFoundException y GlobalExceptionHandler devuelve
+una respuesta 404 con un mensaje de error.
+
+
+Pregunta 26:
+Como se manejan los errores?
+
+Respuesta:
+Con GlobalExceptionHandler. Este componente captura excepciones y devuelve un
+ApiError con codigo HTTP, mensaje y ruta donde ocurrio el problema.
+
+
+Pregunta 27:
+Que es un DTO y por que se usa?
+
+Respuesta:
+Un DTO es un objeto para transportar datos entre capas o entre frontend y
+backend. Se usa para no exponer directamente toda la entidad y para controlar
+que datos entran o salen de la API.
+
+
+Pregunta 28:
+Que diferencia hay entre entidad y DTO?
+
+Respuesta:
+La entidad representa una tabla de la base de datos. El DTO representa los datos
+que se reciben o se devuelven por la API. Por ejemplo, Customer tiene password,
+pero CustomerResponse no lo devuelve.
+
+
+Pregunta 29:
+Que relacion existe entre SaleOrder y SaleOrderItem?
+
+Respuesta:
+Es una relacion uno a muchos. Un pedido puede tener muchos items, y cada item
+pertenece a un solo pedido.
+
+
+Pregunta 30:
+Que significa cascade = CascadeType.ALL?
+
+Respuesta:
+Significa que al guardar un pedido tambien se guardan sus items relacionados.
+Asi no es necesario guardar cada detalle manualmente por separado.
+
+
+Pregunta 31:
+Que significa orphanRemoval = true?
+
+Respuesta:
+Significa que si un item se elimina de la lista del pedido, tambien puede ser
+eliminado de la base de datos porque queda sin padre.
+
+
+Pregunta 32:
+Que hace DataSeeder?
+
+Respuesta:
+Carga productos iniciales cuando la tabla productos esta vacia. Esto permite
+que el catalogo tenga datos apenas se ejecuta el backend por primera vez.
+
+
+Pregunta 33:
+Como evita DataSeeder duplicar productos?
+
+Respuesta:
+Antes de insertar productos revisa productRepository.count(). Si ya hay
+productos, no inserta nada.
+
+
+Pregunta 34:
+Que pasa si el backend no responde al cargar productos?
+
+Respuesta:
+El frontend intenta usar productos de respaldo definidos localmente en data.js.
+Esto evita que la pagina quede completamente vacia.
+
+
+Pregunta 35:
+Como se filtran los productos?
+
+Respuesta:
+En el frontend se filtran segun el texto de busqueda y la categoria activa. La
+busqueda compara el texto con el titulo y la marca del producto.
+
+
+Pregunta 36:
+Como se consulta el historial de pedidos?
+
+Respuesta:
+Cuando hay un usuario con correo, React llama a GET /api/orders?email=correo y
+el backend devuelve los pedidos asociados a ese email ordenados por fecha.
+
+
+Pregunta 37:
+El proyecto tiene roles de administrador?
+
+Respuesta:
+No se observa una gestion completa de roles. Existen endpoints CRUD para
+productos, pero no hay autenticacion por rol para protegerlos. Para produccion
+deberia agregarse control de permisos.
+
+
+Pregunta 38:
+Que mejoras de seguridad se podrian agregar?
+
+Respuesta:
+Se podria agregar JWT, Spring Security completo, roles de usuario, proteccion de
+endpoints administrativos, validacion mas estricta de stock, HTTPS y manejo de
+sesiones.
+
+
+Pregunta 39:
+El sistema descuenta stock al comprar?
+
+Respuesta:
+Actualmente el pedido guarda los items y el total, pero no se observa una
+disminucion automatica del stock del producto. Esa seria una mejora futura.
+
+
+Pregunta 40:
+Que mejora haria al flujo de pedidos?
+
+Respuesta:
+Validaria que exista stock suficiente antes de crear el pedido, descontaria el
+stock al confirmar la compra y permitiria actualizar estados como En preparacion,
+En transito y Entregado desde un panel administrador.
+
+
+Pregunta 41:
+Que ventaja tiene usar React?
+
+Respuesta:
+React permite dividir la interfaz en componentes reutilizables y manejar el
+estado de forma clara, por ejemplo el carrito, el usuario actual, filtros y
+modales.
+
+
+Pregunta 42:
+Que ventaja tiene usar Vite?
+
+Respuesta:
+Vite permite levantar el frontend rapidamente en desarrollo y compilar la
+aplicacion de forma eficiente.
+
+
+Pregunta 43:
+Que ventaja tiene usar Spring Boot?
+
+Respuesta:
+Spring Boot simplifica la creacion de APIs REST porque integra servidor web,
+inyeccion de dependencias, validaciones, JPA, configuracion y manejo de
+dependencias con Maven.
+
+
+Pregunta 44:
+Que es inyeccion de dependencias?
+
+Respuesta:
+Es cuando Spring crea y entrega automaticamente los objetos que una clase
+necesita. Por ejemplo, ProductController recibe ProductService en su constructor.
+
+
+Pregunta 45:
+Por que los controladores reciben servicios por constructor?
+
+Respuesta:
+Porque es una forma limpia de inyectar dependencias. Facilita pruebas,
+mantenimiento y evita crear objetos manualmente con new.
+
+
+Pregunta 46:
+Que archivo conecta React con Spring Boot?
+
+Respuesta:
+src/api.js en el frontend. Ese archivo define la URL base y las funciones que
+hacen fetch a los endpoints del backend.
+
+
+Pregunta 47:
+Que archivo configura la conexion a MySQL?
+
+Respuesta:
+src/main/resources/application.properties en el backend.
+
+
+Pregunta 48:
+Que archivo define las dependencias Java?
+
+Respuesta:
+pom.xml en motorepuestos-backend.
+
+
+Pregunta 49:
+Que archivo define las dependencias del frontend?
+
+Respuesta:
+package.json en motorepuestos-app.
+
+
+Pregunta 50:
+Como explicaria el proyecto en una exposicion corta?
+
+Respuesta:
+Este proyecto es una tienda web de repuestos para motocicletas. El frontend esta
+hecho en React y permite navegar productos, filtrarlos, agregarlos al carrito,
+registrarse, iniciar sesion y crear pedidos. El backend esta hecho con Spring
+Boot y expone una API REST que maneja productos, usuarios, pedidos y contacto.
+La informacion se guarda en MySQL usando JPA/Hibernate. El backend esta separado
+por capas: controladores, servicios, repositorios, modelos y DTOs, lo cual hace
+que el sistema sea mas ordenado y mantenible.
+
+
+28. PUNTOS FUERTES DEL PROYECTO
+-------------------------------
+
+- Tiene frontend y backend separados.
+- Usa una API REST.
+- Usa base de datos MySQL.
+- Tiene arquitectura por capas.
+- Usa JPA/Hibernate para persistencia.
+- Tiene validaciones en el backend.
+- Tiene manejo global de errores.
+- Cifra contrasenas con BCrypt.
+- Tiene carrito funcional.
+- Tiene flujo de pedidos.
+- Tiene formulario de contacto.
+- Tiene carga inicial de productos.
+- Tiene endpoints CRUD para productos.
+
+
+29. LIMITACIONES O MEJORAS FUTURAS
+----------------------------------
+
+- Agregar autenticacion completa con JWT.
+- Agregar roles: administrador y cliente.
+- Proteger endpoints de crear, editar y eliminar productos.
+- Descontar stock automaticamente al crear pedidos.
+- Validar stock antes de confirmar compra.
+- Agregar panel administrativo.
+- Agregar pruebas unitarias y de integracion.
+- Mejorar seguimiento real de pedidos.
+- Agregar pasarela de pagos real.
+- Corregir textos con problemas de codificacion si aparecen caracteres raros.
+- Agregar paginacion para catalogos grandes.
+- Agregar busqueda y filtros desde el backend.
+
+
+30. FRASE FINAL PARA DEFENSA
+----------------------------
+
+El proyecto demuestra la integracion de una interfaz moderna en React con una
+API REST en Spring Boot y una base de datos MySQL. La aplicacion no solo muestra
+productos, sino que implementa un flujo completo de compra, autenticacion basica,
+persistencia de pedidos y una arquitectura organizada por capas.
+
