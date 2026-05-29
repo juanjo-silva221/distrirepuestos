@@ -211,5 +211,18 @@ El backend ya tiene:
 - Creacion de pedidos.
 - Mensajes de contacto.
 
+
+13. VALIDACIONES FINALES
+
+Se realizaron pruebas finales sobre:
+
+- Registro de usuarios.
+- Inicio de sesión.
+- Gestión de productos.
+- Creación de pedidos.
+- Formulario de contacto.
+
+Se verificó que los endpoints principales respondieran correctamente y que la integración con la base de datos funcionara de forma estable.
+
 Con estos cambios, el backend queda mejor estructurado para una entrega academica
 porque cumple con una arquitectura por capas usando Spring Boot.
