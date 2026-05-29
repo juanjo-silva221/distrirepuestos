@@ -1,0 +1,6 @@
+motorepuestos-app/node_modules
+motorepuestos-app/dist
+backend/node_modules
+backend/data
+**/.git
+**/.idea
