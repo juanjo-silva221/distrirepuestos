@@ -1,0 +1,225 @@
+.product-details-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1050;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.product-details-modal {
+  background-color: var(--bg-card, #ffffff);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+  color: var(--text-color, #1a1a1a);
+}
+
+.details-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0,0,0,0.05);
+  border: none;
+  cursor: pointer;
+  color: var(--text-color, #1a1a1a);
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.2s;
+}
+
+.details-close:hover {
+  background: var(--primary-color, #e63946);
+  color: white;
+}
+
+.details-content {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .details-content {
+    flex-direction: row;
+  }
+}
+
+.details-image-section {
+  flex: 1;
+  background-color: var(--bg-secondary, #f5f5f5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.details-image {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.details-info-section {
+  flex: 1.2;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.details-brand {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted, #666);
+  font-weight: 600;
+}
+
+.details-header h2 {
+  font-size: 2rem;
+  margin: 0.5rem 0;
+  line-height: 1.2;
+}
+
+.details-category {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--bg-secondary, #f0f0f0);
+  border-radius: 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted, #555);
+}
+
+.details-price-box {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color, #e5e5e5);
+}
+
+.details-price {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--primary-color, #e63946);
+}
+
+.details-tax {
+  font-size: 0.9rem;
+  color: var(--text-muted, #888);
+}
+
+.details-specs h3, .details-description h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-color, #1a1a1a);
+}
+
+.details-specs ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.details-specs li {
+  color: var(--text-muted, #555);
+  font-size: 0.95rem;
+}
+
+.details-specs li strong {
+  color: var(--text-color, #333);
+}
+
+.details-description p {
+  color: var(--text-muted, #555);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.btn-add-cart-large {
+  margin-top: auto;
+  background-color: var(--primary-color, #e63946);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.btn-add-cart-large:hover:not(:disabled) {
+  background-color: #d12c38;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
+}
+
+.btn-add-cart-large:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  html[data-theme='dark'] .product-details-modal {
+    background-color: #1a1a1a;
+  }
+  html[data-theme='dark'] .details-image-section {
+    background-color: #2a2a2a;
+  }
+  html[data-theme='dark'] .details-category {
+    background-color: #333;
+    color: #ccc;
+  }
+  html[data-theme='dark'] .details-price-box {
+    border-color: #333;
+  }
+  html[data-theme='dark'] .details-specs li strong {
+    color: #eee;
+  }
+  html[data-theme='dark'] .details-specs li,
+  html[data-theme='dark'] .details-description p {
+    color: #aaa;
+  }
+  html[data-theme='dark'] .details-close {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+  }
+}

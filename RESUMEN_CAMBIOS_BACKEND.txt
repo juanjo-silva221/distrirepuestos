@@ -1,0 +1,228 @@
+RESUMEN DE CAMBIOS REALIZADOS EN EL BACKEND
+
+Proyecto:
+C:\Users\camil\Documents\proyecto\distrirepuestos-springboot-integrado\distrirepuestos-main\motorepuestos-backend
+
+1. CONFIGURACION DE BASE DE DATOS
+
+Se cambio la conexion del backend para usar la base de datos:
+
+distrirepuestos_db
+
+Archivo modificado:
+src\main\resources\application.properties
+
+Configuracion actual:
+
+Host: localhost
+Puerto: 3306
+Base de datos: distrirepuestos_db
+Usuario: root
+Contrasena: vacia
+
+
+2. ARQUITECTURA DEL BACKEND
+
+Antes el backend tenia principalmente:
+
+controller -> repository -> base de datos
+
+Ahora quedo organizado por capas:
+
+controller -> service -> repository -> base de datos
+
+Esto mejora la estructura porque los controladores ya no contienen la logica de negocio.
+Los controladores solo reciben las peticiones HTTP y llaman a los servicios.
+
+
+3. CAPA SERVICE AGREGADA
+
+Se agrego el paquete:
+
+src\main\java\com\distrirepuestos\service
+
+Servicios creados:
+
+ProductService.java
+AuthService.java
+OrderService.java
+ContactService.java
+
+Responsabilidades:
+
+ProductService:
+- Listar productos.
+- Buscar producto por ID.
+- Crear productos.
+- Actualizar productos.
+- Eliminar productos.
+
+AuthService:
+- Registrar usuarios.
+- Validar login.
+- Cifrar contrasenas nuevas con BCrypt.
+- Permitir login de usuarios antiguos con contrasena sin cifrar y actualizarla a BCrypt.
+
+OrderService:
+- Crear pedidos.
+- Generar codigo de pedido.
+- Calcular total del pedido.
+- Guardar items del pedido.
+- Consultar pedidos por correo.
+
+ContactService:
+- Guardar mensajes de contacto.
+- Asignar fecha automaticamente.
+
+
+4. CONTROLADORES REFACTORIZADOS
+
+Se actualizaron estos controladores:
+
+ProductController.java
+AuthController.java
+OrderController.java
+ContactController.java
+
+Ahora los controladores delegan la logica a los servicios.
+
+Ejemplo:
+
+ProductController usa ProductService.
+AuthController usa AuthService.
+OrderController usa OrderService.
+ContactController usa ContactService.
+
+
+5. CRUD DE PRODUCTOS
+
+Se agregaron endpoints completos para productos:
+
+GET    /api/products
+GET    /api/products/{id}
+POST   /api/products
+PUT    /api/products/{id}
+DELETE /api/products/{id}
+
+Esto permite listar, consultar, crear, actualizar y eliminar productos.
+
+
+6. MANEJO GLOBAL DE ERRORES
+
+Se agrego el paquete:
+
+src\main\java\com\distrirepuestos\exception
+
+Archivos creados:
+
+ApiError.java
+GlobalExceptionHandler.java
+ResourceNotFoundException.java
+
+Esto permite devolver errores mas ordenados cuando algo falla, por ejemplo:
+
+- Producto no encontrado.
+- Datos invalidos.
+- Usuario o contrasena incorrectos.
+- Error interno del servidor.
+
+
+7. CIFRADO DE CONTRASENAS
+
+Se agrego:
+
+PasswordConfig.java
+
+Ubicacion:
+
+src\main\java\com\distrirepuestos\config\PasswordConfig.java
+
+Tambien se agrego esta dependencia en pom.xml:
+
+spring-security-crypto
+
+Con esto, las contrasenas nuevas se guardan cifradas con BCrypt.
+
+
+8. CONFIGURACION UTF-8
+
+Se agrego configuracion UTF-8 en pom.xml:
+
+project.build.sourceEncoding=UTF-8
+
+Esto ayuda a evitar problemas con textos en espanol.
+
+
+9. README ACTUALIZADO
+
+Se actualizo el README del backend para explicar:
+
+- Arquitectura por capas.
+- Base de datos configurada.
+- Requisitos.
+- Como ejecutar el backend.
+- Endpoints principales.
+
+
+10. PRUEBA DE EJECUCION
+
+Se ejecuto el backend usando Maven y el JDK incluido en IntelliJ.
+
+El backend quedo corriendo en:
+
+http://localhost:8080
+
+Se probo el endpoint:
+
+http://localhost:8080/api/products
+
+Resultado:
+
+200 OK
+
+Esto confirma que el backend esta respondiendo correctamente.
+
+
+11. COMANDO USADO PARA EJECUTAR EL BACKEND
+
+Como Maven no estaba funcionando directamente desde el Path de la terminal,
+se ejecuto usando la ruta completa:
+
+cd C:\Users\camil\Documents\proyecto\distrirepuestos-springboot-integrado\distrirepuestos-main\motorepuestos-backend
+$env:JAVA_HOME='C:\Program Files\JetBrains\IntelliJ IDEA 2026.1.2\jbr'
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+& 'C:\Program Files\Apache\maven\bin\mvn.cmd' spring-boot:run
+
+
+12. ESTADO FINAL
+
+El backend ya tiene:
+
+- Conexion a MySQL.
+- Entidades JPA.
+- Repositorios.
+- Servicios.
+- Controladores REST.
+- DTOs.
+- Manejo global de errores.
+- CRUD de productos.
+- Registro y login.
+- Cifrado de contrasenas.
+- Creacion de pedidos.
+- Mensajes de contacto.
+
+
+13. VALIDACIONES FINALES
+
+Se realizaron pruebas finales sobre:
+
+- Registro de usuarios.
+- Inicio de sesión.
+- Gestión de productos.
+- Creación de pedidos.
+- Formulario de contacto.
+
+Se verificó que los endpoints principales respondieran correctamente y que la integración con la base de datos funcionara de forma estable.
+
+Con estos cambios, el backend queda mejor estructurado para una entrega academica
+porque cumple con una arquitectura por capas usando Spring Boot.
